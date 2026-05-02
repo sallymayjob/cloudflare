@@ -3,6 +3,28 @@
 
 This repository now includes a runnable Cloudflare Workers backend scaffold at `workers/api` for a Google-free Slack-native LMS MVP loop.
 
+
+## Architecture Boundaries
+
+To keep responsibilities explicit and reduce cross-surface risk, this system follows the boundaries below:
+
+- **Slack is interface-only.** Slack receives user interactions (events, commands, interactivity) and displays responses, but it does not own policy, state transitions, or business rules.
+- **The Cloudflare Worker is the sole business-logic/runtime authority.** All request validation, auth checks, workflow decisions, and side effects are enforced in `workers/api` before any state change.
+- **The D1 database is the source of truth.** Durable platform state lives in the Worker-bound `DB`; external clients should treat API responses as projections of DB-backed state.
+- **The frontend dashboard is API-consumer-only.** The dashboard must call Worker APIs and must not contain privileged secrets or direct publish/write authority that bypasses Worker enforcement.
+
+### Frontend repository and required API surface
+
+- **Frontend repository:** Not present in this repository. Add the canonical dashboard repository URL here once finalized (for example: `https://github.com/<org>/<dashboard-repo>`).
+- **Required API surface exposed by this repo (`workers/api`):**
+  - `GET /health`
+  - `POST /admin/content-approval-sync`
+  - `POST /api/slack/events`
+  - `POST /api/slack/commands`
+  - `POST /api/slack/interactivity`
+
+If/when dashboard-specific endpoints are introduced, they must still route through Worker authz/authn and write through the same DB-backed business logic boundary.
+
 ### Worker routes
 - `GET /health`
 - `POST /admin/content-approval-sync`
