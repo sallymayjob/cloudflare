@@ -2,17 +2,19 @@ name = "slack-lms-api"
 main = "src/index.ts"
 compatibility_date = "2026-05-02"
 
+# Safe default: placeholders intentionally fail deploy until env-specific
+# resources are created and selected with --env staging|production.
 [[d1_databases]]
 binding = "DB"
-database_name = "slack_lms"
-database_id = "REPLACE_D1_DATABASE_ID"
+database_name = "REPLACE_WITH_ENV_SPECIFIC_DB_NAME"
+database_id = "REPLACE_WITH_ENV_SPECIFIC_D1_DATABASE_ID"
 
 [[queues.producers]]
 binding = "DELIVERY_QUEUE"
-queue = "lesson-delivery"
+queue = "REPLACE_WITH_ENV_SPECIFIC_QUEUE_NAME"
 
 [[queues.consumers]]
-queue = "lesson-delivery"
+queue = "REPLACE_WITH_ENV_SPECIFIC_QUEUE_NAME"
 max_batch_size = 10
 max_batch_timeout = 5
 
@@ -21,3 +23,41 @@ REPLAY_WINDOW_SECONDS = "300"
 
 [triggers]
 crons = ["*/5 * * * *"]
+
+[env.staging]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "slack_lms_staging"
+database_id = "REPLACE_STAGING_D1_DATABASE_ID"
+
+[[env.staging.queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "lesson-delivery-staging"
+
+[[env.staging.queues.consumers]]
+queue = "lesson-delivery-staging"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[env.staging.vars]
+REPLAY_WINDOW_SECONDS = "300"
+
+[env.production]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "slack_lms_production"
+database_id = "REPLACE_PRODUCTION_D1_DATABASE_ID"
+
+[[env.production.queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "lesson-delivery-production"
+
+[[env.production.queues.consumers]]
+queue = "lesson-delivery-production"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[env.production.vars]
+REPLAY_WINDOW_SECONDS = "300"
