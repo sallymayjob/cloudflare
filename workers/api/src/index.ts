@@ -59,13 +59,22 @@ async function handleSync(req: Request, env: Env, requestId: string) {
   const now = new Date().toISOString();
   const contentId = payload.content.lessonId || payload.content.courseId;
   if (!contentId) return fail("schema_invalid", "content missing lessonId/courseId", requestId, 400);
+  if (payload.contentType === "lesson" && !payload.content.courseId) return fail("schema_invalid", "lesson content missing courseId", requestId, 400);
+  if (payload.contentType === "lesson" && !payload.content.title) return fail("schema_invalid", "lesson content missing title", requestId, 400);
 
   await env.DB.batch([
-    env.DB.prepare("INSERT INTO approvals (id, idempotency_key, content_hash, approval_phrase, approved_by, approved_at, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(crypto.randomUUID(), idem, payload.contentHash, payload.approval.approvalPhrase, payload.approval.approvedBy, payload.approval.approvedAt, "approved", now, now),
+    env.DB.prepare("INSERT INTO courses (id, title, status, content_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET title=excluded.title, status=excluded.status, content_json=excluded.content_json, updated_at=excluded.updated_at")
+      .bind(payload.content.courseId, payload.content.courseTitle || payload.content.courseId, payload.content.status, JSON.stringify({ courseId: payload.content.courseId, title: payload.content.courseTitle || payload.content.courseId }), now, now),
+    ...(payload.content.moduleId ? [
+      env.DB.prepare("INSERT INTO modules (id, course_id, title, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET course_id=excluded.course_id, title=excluded.title, status=excluded.status, updated_at=excluded.updated_at")
+        .bind(payload.content.moduleId, payload.content.courseId, payload.content.moduleTitle || payload.content.moduleId, payload.content.status, now, now),
+    ] : []),
     env.DB.prepare("INSERT OR REPLACE INTO lessons (id, course_id, module_id, title, status, slack_message, content_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT created_at FROM lessons WHERE id = ?), ?), ?)")
       .bind(payload.content.lessonId, payload.content.courseId, payload.content.moduleId, payload.content.title, payload.content.status, payload.content.slackThreadText || "", JSON.stringify(payload.content), payload.content.lessonId, now, now),
   ]);
+
+  await env.DB.prepare("INSERT INTO approvals (id, idempotency_key, content_hash, approval_phrase, approved_by, approved_at, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .bind(crypto.randomUUID(), idem, payload.contentHash, payload.approval.approvalPhrase, payload.approval.approvedBy, payload.approval.approvedAt, "approved", now, now).run();
 
   const queueRows: string[] = [];
   if (payload.publish_mode === "queue" && payload.contentType === "lesson") {

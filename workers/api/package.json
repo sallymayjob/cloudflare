@@ -3,19 +3,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "npx wrangler dev",
     "test": "vitest run",
+    "test:content-sync": "node scripts/test-content-sync.mjs",
+    "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
+    "db:inspect:lessons": "npx wrangler d1 execute DB --local --command \"SELECT id, course_id, module_id, title, status, created_at, updated_at FROM lessons ORDER BY updated_at DESC LIMIT 20\"",
+    "db:inspect:queue": "npx wrangler d1 execute DB --local --command \"SELECT id, lesson_id, workspace_id, learner_id, status, due_at, delivered_at, attempts, max_attempts, idempotency_key, created_at, updated_at FROM lesson_queue ORDER BY created_at DESC LIMIT 20\"",
+    "db:inspect:audit": "npx wrangler d1 execute DB --local --command \"SELECT id, actor, action, entity_type, entity_id, status, metadata_json, created_at FROM audit_logs ORDER BY created_at DESC LIMIT 20\"",
     "predeploy": "./scripts/predeploy-check.sh",
-    "deploy:staging": "npm run predeploy && wrangler deploy --env staging",
-    "deploy:production": "npm run predeploy && wrangler deploy --env production",
-    "migrate:staging": "wrangler d1 migrations apply DB --env staging",
-    "migrate:production": "wrangler d1 migrations apply DB --env production",
+    "deploy:staging": "npm run predeploy && npx wrangler deploy --env staging",
+    "deploy:production": "npm run predeploy && npx wrangler deploy --env production",
+    "migrate:staging": "npx wrangler d1 migrations apply DB --env staging",
+    "migrate:production": "npx wrangler d1 migrations apply DB --env production",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "eslint": "^9.26.0",
     "typescript": "^5.8.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^4.87.0"
   }
 }
