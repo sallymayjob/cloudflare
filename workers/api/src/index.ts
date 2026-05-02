@@ -123,7 +123,7 @@ async function handleSlackInteractions(req: Request, env: Env, requestId: string
   if (!verified.ok) return verified.response;
   const payload = JSON.parse(new URLSearchParams(verified.body).get("payload") || "{}");
   const dedupeMaterial = payload.trigger_id || payload.view?.id || `${payload.user?.id}:${payload.action_ts || "0"}:${await sha256(verified.body)}`;
-  if (await isDuplicateSlackRequest(env, `ia:${dedupeMaterial}`, "interactions")) return Response.json({ response_action: "clear" });
+  if (await isDuplicateSlackRequest(env, `ia:${dedupeMaterial}`, "interactivity")) return Response.json({ response_action: "clear" });
 
   if (payload.type === "view_submission") {
     const learnerId = payload.user?.id || "unknown";
@@ -135,6 +135,33 @@ async function handleSlackInteractions(req: Request, env: Env, requestId: string
     return Response.json({ response_action: "clear" });
   }
   return ok({ received: true }, requestId);
+}
+
+
+async function withDeprecatedInteractionsMetadata(res: Response, env: Env, requestId: string) {
+  await insertAudit(env, "system", "deprecated_route_used", "route", "/api/slack/interactions", "warning", { replacement: "/api/slack/interactivity", requestId });
+  console.warn(JSON.stringify({ level: "warn", event: "deprecated_route_used", route: "/api/slack/interactions", replacement: "/api/slack/interactivity", requestId }));
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    const payload = await res.clone().json().catch(() => null);
+    if (payload && typeof payload === "object") {
+      return Response.json({
+        ...payload,
+        deprecation: {
+          deprecated: true,
+          route: "/api/slack/interactions",
+          replacement: "/api/slack/interactivity",
+          sunset: "TBD"
+        }
+      }, { status: res.status, headers: res.headers });
+    }
+  }
+
+  const headers = new Headers(res.headers);
+  headers.set("x-deprecated-route", "/api/slack/interactions");
+  headers.set("x-route-replacement", "/api/slack/interactivity");
+  return new Response(res.body, { status: res.status, headers });
 }
 
 async function postToSlack(env: Env, channel: string, text: string) {
@@ -155,7 +182,8 @@ export default {
     if (req.method === "POST" && url.pathname === "/admin/content-approval-sync") return handleSync(req, env, requestId);
     if (req.method === "POST" && url.pathname === "/api/slack/events") return handleSlackEvents(req, env, requestId);
     if (req.method === "POST" && url.pathname === "/api/slack/commands") return handleSlackCommands(req, env, requestId);
-    if (req.method === "POST" && url.pathname === "/api/slack/interactions") return handleSlackInteractions(req, env, requestId);
+    if (req.method === "POST" && url.pathname === "/api/slack/interactivity") return handleSlackInteractions(req, env, requestId);
+    if (req.method === "POST" && url.pathname === "/api/slack/interactions") return withDeprecatedInteractionsMetadata(await handleSlackInteractions(req, env, requestId), env, requestId);
     return fail("not_found", "Route not found", requestId, 404);
   },
 

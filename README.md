@@ -8,7 +8,7 @@ This repository now includes a runnable Cloudflare Workers backend scaffold at `
 - `POST /admin/content-approval-sync`
 - `POST /api/slack/events`
 - `POST /api/slack/commands`
-- `POST /api/slack/interactions`
+- `POST /api/slack/interactivity`
 
 ### Environment variables / secrets
 Set with Wrangler secrets/vars:

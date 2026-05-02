@@ -70,7 +70,7 @@ describe("submission progress + dedupe", () => {
     const payload = { type: "view_submission", trigger_id: "t1", user: { id: "U1" }, view: { id: "V1", private_metadata: "L1", state: {} } };
     const body = `payload=${encodeURIComponent(JSON.stringify(payload))}`;
     const s = await sign(body);
-    const req = new Request("http://x/api/slack/interactions", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig, "content-type": "application/x-www-form-urlencoded" }, body });
+    const req = new Request("http://x/api/slack/interactivity", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig, "content-type": "application/x-www-form-urlencoded" }, body });
     await worker.fetch(req, env);
     expect(submissions.length).toBe(1);
     expect(progress.has("U1:L1")).toBe(true);
@@ -81,8 +81,8 @@ describe("submission progress + dedupe", () => {
     const payload = { type: "view_submission", trigger_id: "dup", user: { id: "U1" }, view: { id: "V1", private_metadata: "L1", state: {} } };
     const body = `payload=${encodeURIComponent(JSON.stringify(payload))}`;
     const s = await sign(body);
-    const req1 = new Request("http://x/api/slack/interactions", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig }, body });
-    const req2 = new Request("http://x/api/slack/interactions", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig }, body });
+    const req1 = new Request("http://x/api/slack/interactivity", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig }, body });
+    const req2 = new Request("http://x/api/slack/interactivity", { method: "POST", headers: { "x-slack-request-timestamp": s.ts, "x-slack-signature": s.sig }, body });
     await worker.fetch(req1, env);
     await worker.fetch(req2, env);
     expect(submissions.length).toBe(1);
