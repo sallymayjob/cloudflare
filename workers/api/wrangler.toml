@@ -1,0 +1,23 @@
+name = "slack-lms-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-02"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "slack_lms"
+database_id = "REPLACE_D1_DATABASE_ID"
+
+[[queues.producers]]
+binding = "DELIVERY_QUEUE"
+queue = "lesson-delivery"
+
+[[queues.consumers]]
+queue = "lesson-delivery"
+max_batch_size = 10
+max_batch_timeout = 5
+
+[vars]
+REPLAY_WINDOW_SECONDS = "300"
+
+[triggers]
+crons = ["*/5 * * * *"]
