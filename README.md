@@ -39,56 +39,90 @@ Tests cover:
 ## Environment setup and deployment
 Run all commands from `workers/api` unless noted.
 
-### 1) Create and bind D1 per environment
-Create one D1 database per deploy environment and then copy the IDs into `wrangler.toml`.
+### Command reference (`workers/api/package.json`)
 
-```bash
-# Create D1 databases
-wrangler d1 create slack_lms_staging
-wrangler d1 create slack_lms_production
+| Script | Prerequisites | Expected outcome |
+| --- | --- | --- |
+| `npm run dev` | Wrangler authenticated (`wrangler login`), dependencies installed (`npm install`) | Starts a local Worker development server for manual endpoint checks. |
+| `npm run test` | Dependencies installed | Runs the Vitest suite and exits non-zero on failures. |
+| `npm run predeploy` | `workers/api/wrangler.toml` placeholders replaced | Fails fast if `REPLACE_*` placeholders remain. |
+| `npm run deploy:staging` | `predeploy` passes, staging secrets/DB configured in Cloudflare | Deploys the Worker to the `staging` environment. |
+| `npm run deploy:production` | `predeploy` passes, production secrets/DB configured in Cloudflare | Deploys the Worker to the `production` environment. |
+| `npm run migrate:staging` | Staging D1 database exists and is bound as `DB` in `wrangler.toml` | Applies pending SQL migrations to staging D1. |
+| `npm run migrate:production` | Production D1 database exists and is bound as `DB` in `wrangler.toml` | Applies pending SQL migrations to production D1. |
+| `npm run lint` *(optional)* | `eslint` installed via dev dependencies | Runs ESLint over the Worker project and exits non-zero on lint violations. |
+| `npm run typecheck` *(optional)* | `typescript` installed via dev dependencies | Runs TypeScript compiler checks without emitting build artifacts. |
 
-# Then replace placeholders in workers/api/wrangler.toml:
-# - REPLACE_STAGING_D1_DATABASE_ID
-# - REPLACE_PRODUCTION_D1_DATABASE_ID
-```
+### First-time setup (operator runbook)
 
-Optional: run migrations per environment after DB IDs are bound.
+Use this sequence when onboarding a new operator or setting up a new workstation.
 
-```bash
-wrangler d1 migrations apply DB --env staging
-wrangler d1 migrations apply DB --env production
-```
+1. **Install prerequisites**
+   - Install Node.js 20+ and npm.
+   - Install Wrangler CLI (`npm i -g wrangler`) or use `npx wrangler`.
+   - Authenticate to Cloudflare: `wrangler login`.
 
-### 2) Set secrets per environment
-Set each required secret separately for `staging` and `production`.
+2. **Install project dependencies**
 
-```bash
-# Staging secrets
-wrangler secret put ADMIN_SYNC_TOKEN --env staging
-wrangler secret put SLACK_SIGNING_SECRET --env staging
-wrangler secret put SLACK_BOT_TOKEN --env staging
+   ```bash
+   cd workers/api
+   npm install
+   ```
 
-# Production secrets
-wrangler secret put ADMIN_SYNC_TOKEN --env production
-wrangler secret put SLACK_SIGNING_SECRET --env production
-wrangler secret put SLACK_BOT_TOKEN --env production
-```
+3. **Create D1 databases (one per environment)**
 
-### 3) Deploy with explicit environment
-A predeploy check is required and fails if any `REPLACE_*` placeholder remains in `wrangler.toml`.
+   ```bash
+   wrangler d1 create slack_lms_staging
+   wrangler d1 create slack_lms_production
+   ```
 
-```bash
-# Validate config placeholders are fully replaced
-npm run predeploy
+4. **Bind D1 IDs in `workers/api/wrangler.toml`**
+   - Replace placeholders:
+     - `REPLACE_STAGING_D1_DATABASE_ID`
+     - `REPLACE_PRODUCTION_D1_DATABASE_ID`
 
-# Deploy explicitly to staging or production
-wrangler deploy --env staging
-wrangler deploy --env production
+5. **Set environment secrets**
 
-# Or use convenience scripts (runs predeploy automatically)
-npm run deploy:staging
-npm run deploy:production
-```
+   ```bash
+   # Staging
+   wrangler secret put ADMIN_SYNC_TOKEN --env staging
+   wrangler secret put SLACK_SIGNING_SECRET --env staging
+   wrangler secret put SLACK_BOT_TOKEN --env staging
+
+   # Production
+   wrangler secret put ADMIN_SYNC_TOKEN --env production
+   wrangler secret put SLACK_SIGNING_SECRET --env production
+   wrangler secret put SLACK_BOT_TOKEN --env production
+   ```
+
+6. **Validate configuration and run quality checks**
+
+   ```bash
+   npm run predeploy
+   npm run test
+   npm run lint
+   npm run typecheck
+   ```
+
+7. **Apply database migrations**
+
+   ```bash
+   npm run migrate:staging
+   npm run migrate:production
+   ```
+
+8. **Deploy**
+
+   ```bash
+   npm run deploy:staging
+   npm run deploy:production
+   ```
+
+9. **Optional local smoke test**
+
+   ```bash
+   npm run dev
+   ```
 
 ### Placeholder values (must be replaced)
 The following placeholders are intentionally unsafe defaults and must be replaced before deploy:

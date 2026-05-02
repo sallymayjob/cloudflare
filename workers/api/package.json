@@ -3,12 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "wrangler dev",
     "test": "vitest run",
     "predeploy": "./scripts/predeploy-check.sh",
     "deploy:staging": "npm run predeploy && wrangler deploy --env staging",
-    "deploy:production": "npm run predeploy && wrangler deploy --env production"
+    "deploy:production": "npm run predeploy && wrangler deploy --env production",
+    "migrate:staging": "wrangler d1 migrations apply DB --env staging",
+    "migrate:production": "wrangler d1 migrations apply DB --env production",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "eslint": "^9.26.0",
+    "typescript": "^5.8.3",
     "vitest": "^2.1.8"
   }
 }
