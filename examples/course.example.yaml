@@ -1,0 +1,75 @@
+# content/courses/recruiter-foundations-12mo/course.yaml
+#
+# Example course for the RWR Slack LMS Cloudflare Edition.
+# Course YAML carries the index of modules. Full module bodies live in
+# content/courses/{courseId}/modules/{moduleId}.yaml.
+
+courseId: recruiter-foundations-12mo
+title: "Recruiter Foundations — 12 Month Programme"
+description: >
+  Full-scope foundational programme for new recruiting professionals across the
+  RWR Group specialist brands. Twelve months, six lessons per week, structured
+  through Guided (M1–3), Independent (M4–8), and Strategic (M9–12) tiers. Covers
+  sourcing, candidate engagement, role design, client management, market
+  intelligence, and leadership transition.
+audience: "RWR Group recruiting professionals · NZ/AU · L1–L2"
+rolePath: recruiter-l1
+duration: "12 months · 288 lessons · 6 lessons/week"
+status: Live
+
+modules:
+  - moduleId: M01
+    title: "Foundations & Onboarding"
+    order: 1
+    weeks: 4
+  - moduleId: M02
+    title: "Sourcing Fundamentals"
+    order: 2
+    weeks: 4
+  - moduleId: M03
+    title: "Candidate Engagement & Boolean Search"
+    order: 3
+    weeks: 4
+  - moduleId: M04
+    title: "Role Design & Brief Taking"
+    order: 4
+    weeks: 4
+  - moduleId: M05
+    title: "Pipeline Management"
+    order: 5
+    weeks: 4
+  - moduleId: M06
+    title: "Candidate Experience & Negotiation"
+    order: 6
+    weeks: 4
+  - moduleId: M07
+    title: "Client Relationships"
+    order: 7
+    weeks: 4
+  - moduleId: M08
+    title: "Market Intelligence & Insights"
+    order: 8
+    weeks: 4
+  - moduleId: M09
+    title: "Strategic Sourcing"
+    order: 9
+    weeks: 4
+  - moduleId: M10
+    title: "Account Management"
+    order: 10
+    weeks: 4
+  - moduleId: M11
+    title: "Leadership Foundations"
+    order: 11
+    weeks: 4
+  - moduleId: M12
+    title: "Mastery & Certification"
+    order: 12
+    weeks: 4
+
+metadata:
+  createdBy: sally
+  createdAt: "2026-01-15T08:00:00Z"
+  updatedAt: "2026-04-30T05:30:00Z"
+  approvedBy: sally
+  approvedAt: "2026-02-01T09:00:00Z"

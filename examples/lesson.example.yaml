@@ -1,0 +1,103 @@
+# content/courses/recruiter-foundations-12mo/lessons/M03-W02-L04.yaml
+#
+# Example lesson YAML. Status: Ready (passed QA, eligible for staging sync).
+# All seven ULC sections present. submitCommand matches lessonId. QA block populated.
+# This lesson is what an Approval Packet would be issued against.
+
+lessonId: M03-W02-L04
+courseId: recruiter-foundations-12mo
+moduleId: M03
+week: 2
+day: 4
+title: "Writing boolean strings for niche technical roles"
+intent: "Apply boolean operators to reduce candidate search results by 80% on a real LinkedIn search."
+blueprintId: boolean-search-niche-roles
+difficulty: Independent
+type: daily-micro
+status: Ready
+
+hook: >
+  You searched "DevOps engineer" on LinkedIn and got 47,000 results, none of
+  them right. The problem isn't the role — it's the string.
+
+coreContent: >
+  Niche technical roles need niche search strings. The "DevOps engineer" search
+  fails because the phrase rarely appears verbatim in profiles of actually-strong
+  candidates. Strong DevOps engineers describe their work in tools and outcomes:
+  "Kubernetes", "Terraform", "CI/CD pipeline ownership", "incident response".
+
+  Build the string in three layers. Layer one: required tools, joined with AND.
+  ("Kubernetes" AND "Terraform"). Layer two: outcome verbs, grouped with OR.
+  ("reduced deploy time" OR "improved reliability" OR "cut MTTR"). Layer three:
+  exclusions for adjacent-but-wrong roles. (NOT "junior" NOT "intern" NOT
+  "looking for"). Wrap each layer in parentheses to control precedence.
+
+  The result is longer than a generic search and shorter than a kitchen-sink
+  string. You want 200–800 results, not 47,000 and not 12. If you're under 200,
+  you've over-constrained — drop one outcome verb. If you're over 1,000, you've
+  under-constrained — add one tool or one exclusion.
+
+  Document the string in your saved searches with a name that future-you will
+  recognize. Include the role title, the role level, and the date. Boolean
+  strings rot — what works in April returns garbage by October as platform
+  ranking changes.
+
+insight: >
+  The strongest candidates rarely use the role's title in their headlines and
+  instead describe outcomes and tools, so search the substance not the label.
+
+takeaway: "Build boolean in three layers: required tools, outcome verbs, exclusions."
+
+mission: >
+  Open LinkedIn (or LinkedIn Recruiter if you have it). Pick one technical role
+  you're currently working. Build a three-layer boolean string targeting 200–800
+  results. Save the search with a date-stamped name. Take a screenshot of the
+  result count.
+
+verification: >
+  Paste the boolean string you saved and the result count. Both must be present.
+
+submitCommand: "/submit M03-W02-L04 complete"
+
+slackThreadText: |
+  📘 *You searched "DevOps engineer" on LinkedIn and got 47,000 results. None of the top 50 are right. The problem isn't the role — it's the string.*
+
+  Niche technical roles need niche search strings. The "DevOps engineer" search fails because the phrase rarely appears verbatim in profiles of actually-strong candidates. Strong DevOps engineers describe their work in tools and outcomes: "Kubernetes", "Terraform", "CI/CD pipeline ownership", "incident response".
+
+  Build the string in three layers. Layer one: required tools, joined with AND. ("Kubernetes" AND "Terraform"). Layer two: outcome verbs, grouped with OR. ("reduced deploy time" OR "improved reliability" OR "cut MTTR"). Layer three: exclusions for adjacent-but-wrong roles. (NOT "junior" NOT "intern" NOT "looking for"). Wrap each layer in parentheses to control precedence.
+
+  The result is longer than a generic search and shorter than a kitchen-sink string. You want 200–800 results, not 47,000 and not 12. If you're under 200, you've over-constrained — drop one outcome verb. If you're over 1,000, you've under-constrained — add one tool or one exclusion.
+
+  Document the string in your saved searches with a name that future-you will recognize. Include the role title, the role level, and the date. Boolean strings rot — what works in April returns garbage by October as platform ranking changes.
+
+  ———
+  💡 *Insight:* The strongest candidates rarely use the role's title in their headlines — they describe outcomes and tools. Search the substance, not the label.
+
+  *Takeaway:* Build boolean in three layers: required tools, outcome verbs, exclusions.
+
+  ———
+  ✍️ *Mission:* Open LinkedIn. Pick one technical role you're working. Build a three-layer boolean string targeting 200–800 results. Save with a date-stamped name. Screenshot the result count.
+  *Format:* screenshot + text
+  *Time:* 5 min
+
+  *Verification:* Paste the boolean string you saved and the result count. Both must be present.
+
+  ———
+  ✍️ *Done? Submit it:*
+  `/submit M03-W02-L04 complete`
+  Or react ✅ to this message.
+
+qa:
+  sop05Score: 92
+  verdict: "Strong Pass"
+  pedFlags: []
+
+metadata:
+  createdBy: sally
+  createdAt: "2026-04-25T09:00:00Z"
+  updatedAt: "2026-04-30T05:30:00Z"
+  approvedBy: null
+  approvedAt: null
+  approvalPhrase: null
+  targetEnvironment: null
+  contentHash: "<set by validator>"

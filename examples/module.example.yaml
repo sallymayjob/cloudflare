@@ -1,0 +1,49 @@
+# content/courses/recruiter-foundations-12mo/modules/M03.yaml
+#
+# Example module YAML. Each module covers four weeks (24 lessons at six per week).
+# The lessonIds list is the canonical sequence for delivery; lesson bodies live in
+# the lessons/ folder, one file per lesson.
+
+moduleId: M03
+courseId: recruiter-foundations-12mo
+title: "Candidate Engagement & Boolean Search"
+order: 3
+month: 3
+weeks: 4
+focusArea: "Sourcing precision through structured search and disciplined outreach"
+description: >
+  Month 3 transitions learners from generic sourcing into precision techniques.
+  Week 1 covers boolean search foundations; Week 2 covers niche-role search
+  strategies; Week 3 covers candidate engagement messaging; Week 4 closes with
+  a sourcing campaign learners run end-to-end against a real role.
+
+lessonIds:
+  - M03-W01-L01
+  - M03-W01-L02
+  - M03-W01-L03
+  - M03-W01-L04
+  - M03-W01-L05
+  - M03-W01-L06
+  - M03-W02-L01
+  - M03-W02-L02
+  - M03-W02-L03
+  - M03-W02-L04
+  - M03-W02-L05
+  - M03-W02-L06
+  - M03-W03-L01
+  - M03-W03-L02
+  - M03-W03-L03
+  - M03-W03-L04
+  - M03-W03-L05
+  - M03-W03-L06
+  - M03-W04-L01
+  - M03-W04-L02
+  - M03-W04-L03
+  - M03-W04-L04
+  - M03-W04-L05
+  - M03-W04-L06
+
+metadata:
+  createdBy: sally
+  createdAt: "2026-01-20T08:00:00Z"
+  updatedAt: "2026-04-30T05:30:00Z"
