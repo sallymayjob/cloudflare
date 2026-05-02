@@ -36,4 +36,19 @@ describe("content sync route", () => {
     const json = await res.json();
     expect(json.challenge).toBe("abc");
   });
+
+
+  it("supports deprecated slack interactions alias with metadata", async () => {
+    const body = `payload=${encodeURIComponent(JSON.stringify({ type: "block_actions", user: { id: "U1" }, action_ts: "1" }))}`;
+    const ts = Math.floor(Date.now() / 1000).toString();
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode("secret"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const raw = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`v0:${ts}:${body}`));
+    const sig = `v0=${[...new Uint8Array(raw)].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
+    const req = new Request("http://x/api/slack/interactions", { method: "POST", headers: { "x-slack-request-timestamp": ts, "x-slack-signature": sig, "content-type": "application/x-www-form-urlencoded" }, body });
+    const res = await worker.fetch(req, env);
+    const json = await res.json();
+    expect(res.status).toBe(200);
+    expect(json.deprecation?.replacement).toBe("/api/slack/interactivity");
+  });
+
 });
