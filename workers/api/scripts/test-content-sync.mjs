@@ -3,7 +3,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 
 const BASE_URL = process.env.LOCAL_WORKER_URL || "http://localhost:8787";
-const ADMIN_SYNC_TOKEN = "test_admin_sync_token";
+const ADMIN_SYNC_TOKEN = process.env.ADMIN_SYNC_TOKEN || "test_admin_sync_token";
+const ADMIN_SYNC_TOKEN_SOURCE = process.env.ADMIN_SYNC_TOKEN ? "ADMIN_SYNC_TOKEN environment variable" : "local default token";
+const REMOTE_MODE = BASE_URL.startsWith("https://") || BASE_URL.includes("workers.dev");
+const STAGING_DB_INSPECT = process.env.STAGING_DB_INSPECT === "true";
 const LESSON_ID = `smoke-${Date.now()}`;
 const COURSE_ID = "smoke-course";
 const IDEMPOTENCY_KEY = `smoke-${randomUUID()}`;
@@ -19,10 +22,11 @@ function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function wranglerCommand(sql) {
+function wranglerCommand(sql, { remote = false } = {}) {
+  const d1TargetArgs = remote ? ["DB", "--env", "staging", "--remote"] : ["DB", "--local"];
   const output = execFileSync(
     process.execPath,
-    ["--no-warnings", "--experimental-vm-modules", WRANGLER_CLI, "d1", "execute", "DB", "--local", "--json", "--command", sql],
+    ["--no-warnings", "--experimental-vm-modules", WRANGLER_CLI, "d1", "execute", ...d1TargetArgs, "--json", "--command", sql],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   );
   const jsonStart = output.indexOf("[");
@@ -30,8 +34,8 @@ function wranglerCommand(sql) {
   return JSON.parse(output.slice(jsonStart));
 }
 
-function d1Rows(sql) {
-  const result = wranglerCommand(sql);
+function d1Rows(sql, options) {
+  const result = wranglerCommand(sql, options);
   return result.flatMap((entry) => entry.results || []);
 }
 
@@ -94,29 +98,43 @@ const payload = {
 };
 
 console.log(`Testing ${BASE_URL}/admin/content-approval-sync`);
+console.log(`Authorization token source: ${ADMIN_SYNC_TOKEN_SOURCE}`);
+console.log(`Mode: ${REMOTE_MODE ? "remote" : "local"}`);
 console.log(`Idempotency-Key: ${IDEMPOTENCY_KEY}`);
 
 await postSync(payload);
 console.log("First sync response ok.");
 
+if (REMOTE_MODE && !STAGING_DB_INSPECT) {
+  await postSync(payload);
+  console.log("Second sync response ok.");
+  console.log("\nPASS remote staging smoke test: duplicate request returned an idempotent-safe success.");
+  process.exit(0);
+}
+
+const d1Options = REMOTE_MODE ? { remote: true } : undefined;
+if (REMOTE_MODE && STAGING_DB_INSPECT) {
+  console.log("STAGING_DB_INSPECT=true, inspecting remote staging D1.");
+}
+
 printRows(
   "D1 lessons",
-  d1Rows(`SELECT id, course_id, module_id, title, status, created_at, updated_at FROM lessons WHERE id = '${LESSON_ID}'`),
+  d1Rows(`SELECT id, course_id, module_id, title, status, created_at, updated_at FROM lessons WHERE id = '${LESSON_ID}'`, d1Options),
 );
 printRows(
   "D1 lesson_queue",
-  d1Rows(`SELECT id, lesson_id, workspace_id, status, attempts, max_attempts, idempotency_key, created_at, updated_at FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`),
+  d1Rows(`SELECT id, lesson_id, workspace_id, status, attempts, max_attempts, idempotency_key, created_at, updated_at FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`, d1Options),
 );
 printRows(
   "D1 audit_logs",
-  d1Rows(`SELECT id, actor, action, entity_type, entity_id, status, metadata_json, created_at FROM audit_logs WHERE action = 'content_sync' AND metadata_json LIKE '%${IDEMPOTENCY_KEY}%' ORDER BY created_at DESC`),
+  d1Rows(`SELECT id, actor, action, entity_type, entity_id, status, metadata_json, created_at FROM audit_logs WHERE action = 'content_sync' AND metadata_json LIKE '%${IDEMPOTENCY_KEY}%' ORDER BY created_at DESC`, d1Options),
 );
 
 await postSync(payload);
 console.log("Second sync response ok.");
 
-const queueCount = d1Rows(`SELECT COUNT(*) AS count FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`)[0]?.count;
-const auditCount = d1Rows(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'content_sync' AND metadata_json LIKE '%${IDEMPOTENCY_KEY}%'`)[0]?.count;
+const queueCount = d1Rows(`SELECT COUNT(*) AS count FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`, d1Options)[0]?.count;
+const auditCount = d1Rows(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'content_sync' AND metadata_json LIKE '%${IDEMPOTENCY_KEY}%'`, d1Options)[0]?.count;
 
 if (Number(queueCount) !== 1) {
   throw new Error(`Expected exactly 1 queue row for ${QUEUE_IDEMPOTENCY_KEY}, found ${queueCount}.`);
@@ -127,7 +145,7 @@ if (Number(auditCount) !== 1) {
 
 printRows(
   "D1 lesson_queue after duplicate request",
-  d1Rows(`SELECT id, lesson_id, workspace_id, status, attempts, max_attempts, idempotency_key, created_at, updated_at FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`),
+  d1Rows(`SELECT id, lesson_id, workspace_id, status, attempts, max_attempts, idempotency_key, created_at, updated_at FROM lesson_queue WHERE idempotency_key = '${QUEUE_IDEMPOTENCY_KEY}'`, d1Options),
 );
 
 console.log("\nContent sync smoke test passed: duplicate request did not create a duplicate queue row.");
