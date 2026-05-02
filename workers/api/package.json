@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "npx wrangler dev",
     "test": "vitest run",
+    "test:slack": "vitest run test/slack-local.test.ts",
     "test:content-sync": "node scripts/test-content-sync.mjs",
     "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
     "db:inspect:lessons": "npx wrangler d1 execute DB --local --command \"SELECT id, course_id, module_id, title, status, created_at, updated_at FROM lessons ORDER BY updated_at DESC LIMIT 20\"",
